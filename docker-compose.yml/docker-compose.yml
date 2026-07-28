@@ -1,0 +1,42 @@
+# /zentstay/docker-compose.yml
+# Purpose: Defines the local development infrastructure (Databases, Caching).
+# How it works: Docker Compose reads this file to orchestrate containers on an isolated bridge network.
+# Why it exists: Guarantees every developer has the exact same DB/Redis environment without manual installation.
+
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: zentstay_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: zentstay_admin
+      POSTGRES_PASSWORD: zentstay_password
+      POSTGRES_DB: zentstay_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - zentstay_pg_data:/var/lib/postgresql/data
+    networks:
+      - zentstay_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: zentstay_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - zentstay_redis_data:/data
+    networks:
+      - zentstay_network
+
+volumes:
+  zentstay_pg_data:
+  zentstay_redis_data:
+
+networks:
+  zentstay_network:
+    driver: bridge
+    
