@@ -2,6 +2,7 @@ import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import authRoutes from "./routes/auth.routes";
 
 dotenv.config();
 
@@ -24,6 +25,9 @@ app.get('/api/v1/health', (_req: Request, res: Response) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// API Routes
+app.use('/api/v1/auth', authRoutes);
 
 // Note: API routes and global error handlers will be injected here in upcoming steps
 

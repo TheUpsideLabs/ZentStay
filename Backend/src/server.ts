@@ -1,24 +1,23 @@
-import app from './app';
-import { PrismaClient } from '@prisma/client';
+import dotenv from "dotenv";
+dotenv.config();
+import app from "./app";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT) || 5000;
 
-async function bootstrap() {
+async function startServer() {
   try {
-    // Verify database connection
     await prisma.$connect();
-    console.log('✅ Successfully connected to the PostgreSQL database.');
+    console.log("✅ Connected to PostgreSQL");
 
-    // Start Express Server
     app.listen(PORT, () => {
-      console.log(`🚀 ZentStay Backend is running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+      console.log(`🚀 Server running at http://localhost:${PORT}`);
     });
-  } catch (error) {
-    console.error('❌ Failed to start the application:', error);
-    await prisma.$disconnect();
+  } catch (err) {
+    console.error("❌ Failed to start server:", err);
     process.exit(1);
   }
 }
 
-bootstrap();
+startServer();
