@@ -1,38 +1,78 @@
 // backend/src/services/auth.service.ts
 import authRepository from '../repositories/auth.repository';
-import { hashPassword } from '../utils/password';
-import { generateToken } from '../utils/jwt';
+import { hashPassword, comparePassword } from '../utils/password';
+import { generateToken, generateRefreshToken } from '../utils/jwt';
 import { Prisma } from '@prisma/client';
+import { AppError } from "../utils/apperror";
 
 export class AuthService {
   async register(data: Prisma.UserCreateInput) {
-    // Check if user already exists
+    // ... existing register code ...
     const existingUser = await authRepository.findUserByEmail(data.email);
 
     if (existingUser) {
-      throw new Error('User already exists');
+      throw new AppError(
+        409,
+        "User already exists"
+      );
     }
 
-    // Hash password
     const hashedPassword = await hashPassword(data.password);
 
-    // Create user
     const user = await authRepository.createUser({
       ...data,
       password: hashedPassword,
     });
 
-    // Generate JWT
-    const token = generateToken(user.id, user.role);
+    const accessToken = generateToken(user.id, user.role);
+    const refreshToken = generateRefreshToken(user.id, user.role);
 
-    // Remove password before returning
     const { password, ...userWithoutPassword } = user;
+
 
     return {
       user: userWithoutPassword,
-      token,
+      accessToken,
+      refreshToken,
     };
   }
-}
+
+  async login(data: Pick<Prisma.UserCreateInput, 'email' | 'password'>) {
+      // 1. Find user by email
+      const user = await authRepository.findUserByEmail(data.email);
+
+      // 2. If user doesn't exist, throw a generic error
+      if (!user) {
+        throw new AppError(
+          401,
+          "Invalid email or password"
+        );
+      }
+
+      // 3. Compare provided password with stored hash
+      const isPasswordValid = await comparePassword(data.password, user.password);
+
+      if (!isPasswordValid) {
+        throw new AppError(
+          401,
+          "Invalid email or password"
+        );
+      }
+
+      // 4. Generate Access and Refresh Tokens
+      const accessToken = generateToken(user.id, user.role);
+      const refreshToken = generateRefreshToken(user.id, user.role);
+
+      // 5. Remove password from the user object before returning
+      const { password, ...userWithoutPassword } = user;
+
+      return {
+        user: userWithoutPassword,
+        accessToken,
+        refreshToken,
+      };
+    }
+  }
 
 export default new AuthService();
+

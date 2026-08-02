@@ -1,4 +1,5 @@
-import express, { Application, Request, Response } from 'express';
+import { errorMiddleware } from "./middleware/error.middleware";
+import express, { Application, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
@@ -30,5 +31,7 @@ app.get('/api/v1/health', (_req: Request, res: Response) => {
 app.use('/api/v1/auth', authRoutes);
 
 // Note: API routes and global error handlers will be injected here in upcoming steps
+
+app.use(errorMiddleware);
 
 export default app;

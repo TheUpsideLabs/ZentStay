@@ -1,9 +1,6 @@
 // backend/src/utils/jwt.ts
 import jwt from 'jsonwebtoken';
 
-console.log(process.env.JWT_ACCESS_SECRET);
-console.log(process.env.JWT_REFRESH_SECRET);
-
 interface TokenPayload {
   id: string;
   role: string;

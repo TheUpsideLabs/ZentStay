@@ -13,14 +13,66 @@ enum Role {
   ADMIN
 }
 
+enum Gender {
+  BOYS
+  GIRLS
+  UNISEX
+}
+
+enum RoomType {
+  SINGLE
+  DOUBLE
+  TRIPLE
+}
+
+enum Furnishing {
+  FURNISHED
+  SEMI_FURNISHED
+  UNFURNISHED
+}
+
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(STUDENT)
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+  role     Role   @default(STUDENT)
+
+  properties Property[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("users") // Best practice: map to lowercase plural table names in PostgreSQL
+  @@map("users")
+}
+
+model Property {
+  id String @id @default(uuid())
+
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String
+
+  address String
+  city    String
+  state   String
+  pincode String
+
+  rent            Int
+  securityDeposit Int
+
+  availableRooms Int
+
+  gender     Gender
+  roomType   RoomType
+  furnishing Furnishing
+
+  available Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("properties")
 }
