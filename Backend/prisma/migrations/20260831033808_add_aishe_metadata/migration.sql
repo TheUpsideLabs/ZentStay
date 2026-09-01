@@ -1,0 +1,10 @@
+-- AlterTable
+ALTER TABLE "colleges" ADD COLUMN     "aisheCode" TEXT,
+ADD COLUMN     "source" TEXT,
+ADD COLUMN     "sourceYear" TEXT,
+ADD COLUMN     "verified" BOOLEAN NOT NULL DEFAULT false,
+ALTER COLUMN "logo" DROP NOT NULL,
+ALTER COLUMN "banner" DROP NOT NULL,
+ALTER COLUMN "latitude" DROP NOT NULL,
+ALTER COLUMN "longitude" DROP NOT NULL,
+ALTER COLUMN "rating" SET DEFAULT 0;

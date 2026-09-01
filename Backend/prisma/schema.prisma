@@ -31,14 +31,47 @@ enum Furnishing {
   UNFURNISHED
 }
 
-model User {
-  id       String @id @default(uuid())
-  name     String
-  email    String @unique
-  password String
-  role     Role   @default(STUDENT)
+enum RentPeriod {
+  MONTHLY
+  YEARLY
+}
 
-  properties Property[]
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum VisitStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+model User {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  phone        String?   @unique
+  password     String
+  avatar       String?
+  role         Role      @default(STUDENT)
+  isVerified   Boolean   @default(false)
+  otp          String?
+  otpExpiry    DateTime?
+  refreshToken String?
+
+  properties    Property[]
+  bookings      Booking[]
+  reviews       Review[]
+  notifications Notification[]
+  wishlists     Wishlist[]
+  visitRequests VisitRequest[]
+  payments      Payment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -46,11 +79,48 @@ model User {
   @@map("users")
 }
 
+model College {
+  id        String @id @default(uuid())
+  name      String
+  shortName String
+  slug      String @unique
+
+  city  String
+  state String
+
+  logo   String?
+  banner String?
+
+  latitude  Float?
+  longitude Float?
+
+  rating Float @default(0)
+
+  // Source Metadata
+  aisheCode       String?
+  source          String? // e.g. "AISHE"
+  sourceYear      String? // e.g. "2023-24"
+  officialWebsite String?
+  verified        Boolean @default(false)
+  isActive        Boolean @default(true)
+
+  properties Property[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([aisheCode])
+  @@map("colleges")
+}
+
 model Property {
   id String @id @default(uuid())
 
   ownerId String
   owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  collegeId String
+  college   College @relation(fields: [collegeId], references: [id], onDelete: Cascade)
 
   title       String
   description String
@@ -60,19 +130,190 @@ model Property {
   state   String
   pincode String
 
-  rent            Int
-  securityDeposit Int
+  latitude  Float?
+  longitude Float?
 
-  availableRooms Int
+  rent            Int
+  rentPeriod      RentPeriod @default(MONTHLY)
+  securityDeposit Int
+  availableRooms  Int
 
   gender     Gender
   roomType   RoomType
   furnishing Furnishing
 
   available Boolean @default(true)
+  verified  Boolean @default(true)
+  rating    Float   @default(0)
+
+  reviews       Review[]
+  bookings      Booking[]
+  images        PropertyImage[]
+  wishlists     Wishlist[]
+  visitRequests VisitRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([ownerId])
+  @@index([collegeId])
   @@map("properties")
+}
+
+model Booking {
+  id String @id @default(uuid())
+
+  studentId String
+  student   User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  checkInDate        DateTime
+  expectedStayMonths Int
+
+  rentAtBooking   Int
+  securityDeposit Int
+  totalAmount     Int
+
+  status BookingStatus @default(PENDING)
+
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentId])
+  @@index([propertyId])
+  @@index([status])
+  @@map("bookings")
+}
+
+model VisitRequest {
+  id String @id @default(uuid())
+
+  studentId String
+  student   User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  visitDate DateTime
+  message   String?
+
+  status VisitStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentId])
+  @@index([propertyId])
+  @@index([status])
+  @@map("visit_requests")
+}
+
+model Review {
+  id String @id @default(uuid())
+
+  rating  Int
+  comment String
+
+  studentId String
+  student   User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, propertyId])
+  @@index([propertyId])
+  @@map("reviews")
+}
+
+model PropertyImage {
+  id String @id @default(uuid())
+
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  imageUrl String
+  publicId String
+
+  createdAt DateTime @default(now())
+
+  @@index([propertyId])
+  @@map("property_images")
+}
+
+model Notification {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title   String
+  message String
+
+  isRead Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+model Wishlist {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([propertyId])
+  @@map("wishlists")
+}
+enum PaymentStatus {
+  CREATED
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+model Payment {
+  id String @id @default(uuid())
+
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  studentId String
+  student   User    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  provider          String  @default("RAZORPAY")
+  providerOrderId   String? @unique
+  providerPaymentId String? @unique
+  providerSignature String?
+
+  amount   Int
+  currency String @default("INR")
+
+  status PaymentStatus @default(CREATED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([studentId])
+  @@index([providerOrderId])
+  @@index([status])
+  @@map("payments")
 }

@@ -1,51 +1,54 @@
-import Link from "next/link";
+"use client";
 
-import { Container } from "@/components/layout/container";
-import { Logo } from "@/components/layout/logo";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+
+import { MobileNav } from "./mobile-nav";
+import { NavActions } from "./nav-actions";
+import { NavLinks } from "./nav-links";
+import { NavLogo } from "./nav-logo";
 
 export function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener("scroll", onScroll);
+
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl">
-      <Container>
-        <div className="flex h-18 items-center justify-between">
+    <header className="fixed inset-x-0 top-0 z-50">
+      <div className="mx-auto max-w-7xl px-6 pt-5">
+        <div
+          className={`
+            flex
+            h-20
+            items-center
+            justify-between
+            rounded-[24px]
+            px-8
+            transition-all
+            duration-500
+            ${
+              scrolled
+                ? "border border-white/60 bg-white/80 shadow-2xl shadow-blue-100/20 backdrop-blur-xl"
+                : "bg-transparent"
+            }
+          `}
+        >
+          <NavLogo />
 
-          <Logo />
+          <NavLinks />
 
-          <nav className="hidden items-center gap-8 lg:flex">
-            <Link href="/">Home</Link>
+          <NavActions />
 
-            <Link href="/properties">
-              Properties
-            </Link>
-
-            <Link href="/colleges">
-              Colleges
-            </Link>
-
-            <Link href="/owners">
-              For Owners
-            </Link>
-
-            <Link href="/about">
-              About
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-3">
-
-            <Button variant="ghost">
-              Login
-            </Button>
-
-            <Button>
-              Get Started
-            </Button>
-
-          </div>
-
+          <MobileNav />
         </div>
-      </Container>
+      </div>
     </header>
   );
 }

@@ -1,78 +1,233 @@
-// backend/src/services/auth.service.ts
-import authRepository from '../repositories/auth.repository';
-import { hashPassword, comparePassword } from '../utils/password';
-import { generateToken, generateRefreshToken } from '../utils/jwt';
-import { Prisma } from '@prisma/client';
-import { AppError } from "../utils/apperror";
+import { Prisma, Role } from "@prisma/client";
 
-export class AuthService {
-  async register(data: Prisma.UserCreateInput) {
-    // ... existing register code ...
-    const existingUser = await authRepository.findUserByEmail(data.email);
+import authRepository from "../repositories/auth.repository";
 
-    if (existingUser) {
+import {
+  comparePassword,
+  hashPassword,
+} from "../utils/password";
+
+import {
+  generateRefreshToken,
+  generateToken,
+  verifyRefreshToken,
+} from "../utils/jwt";
+
+import { AppError } from "../utils/AppError";
+
+class AuthService {
+  async register(
+    data: Prisma.UserCreateInput
+  ) {
+    const existingEmail =
+      await authRepository.findUserByEmail(
+        data.email
+      );
+
+    if (existingEmail) {
       throw new AppError(
         409,
-        "User already exists"
+        "Email already exists."
       );
     }
 
-    const hashedPassword = await hashPassword(data.password);
+    if (data.phone) {
+      const existingPhone =
+        await authRepository.findUserByPhone(
+          data.phone
+        );
 
-    const user = await authRepository.createUser({
-      ...data,
-      password: hashedPassword,
-    });
+      if (existingPhone) {
+        throw new AppError(
+          409,
+          "Phone number already exists."
+        );
+      }
+    }
 
-    const accessToken = generateToken(user.id, user.role);
-    const refreshToken = generateRefreshToken(user.id, user.role);
+    const hashedPassword =
+      await hashPassword(data.password);
 
-    const { password, ...userWithoutPassword } = user;
+    const user =
+      await authRepository.createUser({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        password: hashedPassword,
+        avatar: data.avatar,
+        role:
+          data.role ??
+          Role.STUDENT,
+      });
 
+    const accessToken =
+      generateToken(
+        user.id,
+        user.role
+      );
+
+    const refreshToken =
+      generateRefreshToken(
+        user.id,
+        user.role
+      );
+
+    await authRepository.saveRefreshToken(
+      user.id,
+      refreshToken
+    );
+
+    const {
+      password,
+      refreshToken: _,
+      ...safeUser
+    } = user;
 
     return {
-      user: userWithoutPassword,
+      user: safeUser,
       accessToken,
       refreshToken,
     };
   }
 
-  async login(data: Pick<Prisma.UserCreateInput, 'email' | 'password'>) {
-      // 1. Find user by email
-      const user = await authRepository.findUserByEmail(data.email);
+  async login(data: {
+    email: string;
+    password: string;
+  }) {
+    const user =
+      await authRepository.findUserByEmail(
+        data.email
+      );
 
-      // 2. If user doesn't exist, throw a generic error
-      if (!user) {
-        throw new AppError(
-          401,
-          "Invalid email or password"
-        );
-      }
-
-      // 3. Compare provided password with stored hash
-      const isPasswordValid = await comparePassword(data.password, user.password);
-
-      if (!isPasswordValid) {
-        throw new AppError(
-          401,
-          "Invalid email or password"
-        );
-      }
-
-      // 4. Generate Access and Refresh Tokens
-      const accessToken = generateToken(user.id, user.role);
-      const refreshToken = generateRefreshToken(user.id, user.role);
-
-      // 5. Remove password from the user object before returning
-      const { password, ...userWithoutPassword } = user;
-
-      return {
-        user: userWithoutPassword,
-        accessToken,
-        refreshToken,
-      };
+    if (!user) {
+      throw new AppError(
+        401,
+        "Invalid email or password."
+      );
     }
+
+    const valid =
+      await comparePassword(
+        data.password,
+        user.password
+      );
+
+    if (!valid) {
+      throw new AppError(
+        401,
+        "Invalid email or password."
+      );
+    }
+
+    const accessToken =
+      generateToken(
+        user.id,
+        user.role
+      );
+
+    const refreshToken =
+      generateRefreshToken(
+        user.id,
+        user.role
+      );
+
+    await authRepository.saveRefreshToken(
+      user.id,
+      refreshToken
+    );
+
+    const {
+      password,
+      refreshToken: _,
+      ...safeUser
+    } = user;
+
+    return {
+      user: safeUser,
+      accessToken,
+      refreshToken,
+    };
   }
 
-export default new AuthService();
+  async refreshAccessToken(
+    refreshToken: string
+  ) {
+    if (!refreshToken) {
+      throw new AppError(
+        401,
+        "Refresh token is missing."
+      );
+    }
 
+    let decoded;
+
+    try {
+      decoded =
+        verifyRefreshToken(
+          refreshToken
+        );
+    } catch {
+      throw new AppError(
+        401,
+        "Invalid or expired refresh token."
+      );
+    }
+
+    const user =
+      await authRepository.findUserByRefreshToken(
+        refreshToken
+      );
+
+    if (!user) {
+      throw new AppError(
+        401,
+        "Invalid or expired refresh token."
+      );
+    }
+
+    // Make sure the token belongs to
+    // the same user stored in its payload.
+    if (decoded.id !== user.id) {
+      throw new AppError(
+        401,
+        "Invalid refresh token."
+      );
+    }
+
+    const accessToken =
+      generateToken(
+        user.id,
+        user.role
+      );
+
+    return {
+      accessToken,
+    };
+  }
+
+  async getMe(
+    userId: string
+  ) {
+    const user =
+      await authRepository.findUserById(
+        userId
+      );
+
+    if (!user) {
+      throw new AppError(
+        404,
+        "User not found."
+      );
+    }
+
+    const {
+      password,
+      refreshToken,
+      ...safeUser
+    } = user;
+
+    return safeUser;
+  }
+}
+
+export default new AuthService();

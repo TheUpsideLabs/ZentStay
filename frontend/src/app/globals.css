@@ -128,3 +128,46 @@
     @apply font-sans;
   }
 }
+
+/* ============================= */
+/* ZentStay Design Tokens */
+/* ============================= */
+
+:root {
+  --radius-xs: 12px;
+  --radius-sm: 16px;
+  --radius-md: 24px;
+  --radius-lg: 32px;
+
+  --shadow-xs: 0 2px 8px rgba(15, 23, 42, 0.04);
+
+  --shadow-sm: 0 8px 24px rgba(15, 23, 42, 0.06);
+
+  --shadow-md: 0 14px 40px rgba(15, 23, 42, 0.08);
+
+  --shadow-lg: 0 24px 60px rgba(15, 23, 42, 0.12);
+
+  --section-space: 120px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+section {
+  position: relative;
+}
+
+img {
+  user-select: none;
+}
+
+::selection {
+  background: #2563eb;
+  color: white;
+}
