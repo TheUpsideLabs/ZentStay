@@ -1,6 +1,8 @@
 # Node
 node_modules/
 
+frontend.zip.zst
+
 # Build
 dist/
 
