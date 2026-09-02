@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { Bell, Heart, Loader2, LayoutDashboard } from "lucide-react";
@@ -36,7 +36,7 @@ export function NavActions() {
   }
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="hidden lg:flex items-center gap-4">
       {isAuthenticated ? (
         <>
           {/* ================= WISHLIST ================= */}

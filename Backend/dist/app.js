@@ -25,10 +25,14 @@ const app = (0, express_1.default)();
 // ================================
 // CORS
 // ================================
-const frontendUrl = process.env.FRONTEND_URL ||
-    "http://localhost:3000";
 app.use((0, cors_1.default)({
-    origin: frontendUrl,
+    origin: (origin, callback) => {
+        // Allow mobile apps, curl, server-to-server, and all Vercel deployments
+        if (!origin || origin.includes("vercel.app") || origin.includes("localhost") || origin.includes("127.0.0.1")) {
+            return callback(null, true);
+        }
+        return callback(null, true);
+    },
     credentials: true,
     methods: [
         "GET",

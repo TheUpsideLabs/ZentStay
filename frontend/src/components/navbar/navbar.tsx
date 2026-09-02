@@ -22,21 +22,24 @@ export function Navbar() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
-      <div className="mx-auto max-w-7xl px-6 pt-5">
+      <div className="mx-auto max-w-7xl px-3 sm:px-6 pt-2 sm:pt-5">
         <div
           className={`
             flex
-            h-20
+            h-16
+            sm:h-20
             items-center
             justify-between
-            rounded-[24px]
-            px-8
+            rounded-2xl
+            sm:rounded-[24px]
+            px-4
+            sm:px-8
             transition-all
-            duration-500
+            duration-300
             ${
               scrolled
-                ? "border border-white/60 bg-white/80 shadow-2xl shadow-blue-100/20 backdrop-blur-xl"
-                : "bg-transparent"
+                ? "border border-slate-200/80 bg-white/95 shadow-xl shadow-slate-900/5 backdrop-blur-xl"
+                : "border border-slate-200/50 bg-white/90 shadow-xs backdrop-blur-md sm:border-transparent sm:bg-transparent sm:shadow-none"
             }
           `}
         >
@@ -51,4 +54,4 @@ export function Navbar() {
       </div>
     </header>
   );
-}
+}

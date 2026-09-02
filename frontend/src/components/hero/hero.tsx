@@ -5,7 +5,7 @@ import { HeroRight } from "./hero-right";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-white to-white pt-32">
+    <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-white to-white pt-24 sm:pt-36 lg:pt-40">
 
       {/* Background Glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -40,13 +40,13 @@ export function Hero() {
             grid
             grid-cols-1
             items-center
-            gap-20
-            pt-32
-            pb-24
+            gap-12
+            pt-4
+            pb-16
             lg:min-h-[780px]
             lg:grid-cols-[58%_42%]
             lg:gap-20
-            lg:pt-36
+            lg:pt-10
             lg:pb-28
           "
         >

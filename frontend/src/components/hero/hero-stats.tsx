@@ -24,7 +24,7 @@ const stats = [
 
 export function HeroStats() {
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+    <div className="grid grid-cols-3 gap-2.5 sm:gap-5">
       {stats.map((item) => {
         const Icon = item.icon;
 
@@ -33,45 +33,46 @@ export function HeroStats() {
             key={item.label}
             className="
             group
-            rounded-[28px]
+            rounded-2xl
+            sm:rounded-[28px]
             border
             border-slate-200
             bg-white
-            p-6
+            p-3.5
+            sm:p-6
             text-center
-            shadow-sm
+            shadow-xs
             transition-all
             duration-300
-            hover:-translate-y-2
-            hover:shadow-xl
-            hover:shadow-blue-100/30
-            lg:text-left
+            hover:shadow-md
             "
           >
             <div
               className="
               mx-auto
-              mb-5
+              mb-2.5
+              sm:mb-4
               flex
-              h-14
-              w-14
+              h-9
+              w-9
+              sm:h-12
+              sm:w-12
               items-center
               justify-center
-              rounded-2xl
+              rounded-xl
+              sm:rounded-2xl
               bg-blue-50
-              transition
-              group-hover:bg-blue-600
-              lg:mx-0
+              text-blue-600
               "
             >
-              <Icon className="h-7 w-7 text-blue-600 transition group-hover:text-white" />
+              <Icon className="h-4 w-4 sm:h-6 sm:w-6" />
             </div>
 
-            <h3 className="text-3xl font-black text-slate-900">
+            <h3 className="text-base sm:text-2xl lg:text-3xl font-black text-slate-900">
               {item.value}
             </h3>
 
-            <p className="mt-2 text-sm font-medium text-slate-500">
+            <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs font-semibold text-slate-500">
               {item.label}
             </p>
           </div>
@@ -79,4 +80,4 @@ export function HeroStats() {
       })}
     </div>
   );
-}
+}
