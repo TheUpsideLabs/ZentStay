@@ -6,12 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const app_1 = __importDefault(require("./app"));
-const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
+const prisma_1 = __importDefault(require("./config/prisma"));
 const PORT = Number(process.env.PORT) || 5000;
 async function startServer() {
     try {
-        await prisma.$connect();
+        await prisma_1.default.$connect();
         console.log("✅ Connected to PostgreSQL");
         app_1.default.listen(PORT, () => {
             console.log(`🚀 Server running at http://localhost:${PORT}`);

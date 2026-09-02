@@ -1,9 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config();
 import app from "./app";
-import { PrismaClient } from "@prisma/client";
+import prisma from "./config/prisma";
 
-const prisma = new PrismaClient();
 const PORT = Number(process.env.PORT) || 5000;
 
 async function startServer() {

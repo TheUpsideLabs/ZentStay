@@ -1,12 +1,5 @@
-import { PrismaClient, User, Role } from "@prisma/client";
-
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-  throw new Error("DATABASE_URL is missing.");
-}
-
-const prisma = new PrismaClient();
+import prisma from "../config/prisma";
+import { User, Role } from "@prisma/client";
 
 class AuthRepository {
   async findUserByEmail(
