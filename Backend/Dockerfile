@@ -39,8 +39,12 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY package*.json ./
 
+COPY start.sh ./start.sh
+RUN chmod +x ./start.sh
+
 USER node
 EXPOSE 5000
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["node", "dist/server.js"]
+CMD ["./start.sh"]
+
